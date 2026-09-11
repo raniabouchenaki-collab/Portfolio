@@ -1,0 +1,403 @@
+// doctor's .txt file
+
+6
+
+Victor,Frankeinstein,2022,surgery,21,500000,0.6
+Peter,steeles,2199,anesthesia,12,150000,0.4
+Amy,vicente,2008,obygyn,27,250000,0.9
+hamza,riad,2678,stitching,9,180000,0.1
+Mia,cheng,2456,surgery,35,700000,1
+Christian,peter,2346,anesthesia,17,175000,0.25
+
+// Patient's .txt file
+
+5
+
+Jonh,doe,1012,2022,20010911,AB,critical,20220318,20260501
+Jane,doe,1010,2022,20050919,O+,moderate,20240318,20240701
+evan,dennings,1088,2199,20040229,O-,critical,20260514
+Kadija,eljdaji,1090,2008,20100727,B,corect,20260514,20260518
+damon,salvatore,1001,2678,19970918,AB-,moderate,20250104,20260104
+
+// doctor.h file
+
+#ifndef DOCTORS_H
+#define DOCTORS_H
+
+#include <iostream>
+#include <string>
+#include <vector>
+#include <utility>
+using namespace std;
+
+class Doctors {
+
+private:   
+
+        string d_firsname;
+        string d_lastname;
+        long int d_ID;
+        string speciality;
+        int yearsofexp;
+        double basesalary;
+        double perfbonus;
+
+public: 
+
+        //setter functions
+        void setdfn (string dfn) {d_firsname=dfn; };
+        void setdln (string dln) {d_lastname=dln; };
+        void setdid (long int did ){d_ID=did; };
+        void setsp (string sp) {speciality=sp; };
+        void setyoe (int yoe ){yearsofexp=yoe; };
+        void setbs (double bs ){basesalary=bs; };
+        void setpb (double pb ){perfbonus=pb; };
+
+        //getter functions
+        string getdfn() { return d_firsname; };
+        string getdln() { return d_lastname; };
+        long int getdid() { return d_ID; };
+        string getsp() { return speciality; };
+        int getyoe() { return yearsofexp; };
+        double getbs() { return basesalary; };
+        double getpb() { return perfbonus; };
+
+        //member functions
+        double Calculate_salary(double bs,double pb) { 
+             double salarywithbonus; 
+
+             salarywithbonus= bs +(bs*pb); //computes salary with bonus
+             return salarywithbonus; //returns it
+             };
+
+       void Print_Doctor_Info(){  //display of doctor info, multiple couts used for program readability
+    
+        cout<<"Doctor's name: "<<d_firsname<<d_lastname<<"\n";
+        cout<<"Doctor's ID: "<<d_ID<<"\n";
+        cout<<"Speciality: "<<speciality<<"\n";
+        cout<<"years of experience: "<<yearsofexp<<"\n";
+        cout<<"Base salary: "<<basesalary<<"\n";
+        cout<<"Perfomance bonus (percentage from 0-1): "<<perfbonus<<"\n";
+        cout<<"Yearly salary (with bonus): "<<Calculate_salary(basesalary,perfbonus)<<"\n";
+         };   
+};
+#endif
+
+// patients .h file
+
+#ifndef PATIENTS_H
+#define PATIENTS_H
+
+#include <iostream>
+#include <string>
+#include <vector>
+#include <utility>
+using namespace std;
+
+class Patients {
+private:   
+            string p_firstname;
+            string p_lastname;
+            long int p_ID;
+            long int d_ID; //assigned doctor's id
+            string datebirth;
+            string bloodtype;
+            string diagnosis;
+            string admisiondate;
+            string dischargedate;
+
+public:
+            // setter functions
+            void setpfn (string pfn) {p_firstname=pfn; };
+            void setpln (string pln) {p_lastname=pln; };
+            void setpid (long int pid ){p_ID=pid; };
+            void setdid (long int did ){d_ID=did;};
+            void setdb (string db){datebirth=db;};
+            void setbt (string bt){bloodtype=bt;};
+            void setdia (string dia){diagnosis=dia;};
+            void setad (string ad){admisiondate=ad;};
+            void setdd (string dd) {dischargedate=dd;};
+
+           //getter functions 
+           string getpfn() { return p_firstname; };
+           string getpln() { return p_lastname; };
+           long int getpid() { return p_ID; };
+           long int getdid() { return d_ID; };
+           string getdb() { return datebirth; };
+           string getbt() { return bloodtype; };
+           string getdia() { return diagnosis; };
+           string getad() { return admisiondate; };
+           string getdd() { return dischargedate;};
+
+           // member functions     
+    std::string Patient_status(string n){ 
+        // finds words in n string
+        if (n.find("critical") != std::string::npos) {
+            return "critical"; }
+
+         if (n.find("moderate") != std::string::npos) {
+            return "moderate";}
+        else {
+        return "Stable";};};
+                        
+    void Print_Patient_Info(){  //display of patient info, multiple couts used for program readability
+    
+        cout<<"Patient's name: "<<p_firstname<<p_lastname<<"\n";
+        cout<<"Patient ID: "<<p_ID<<"\n";
+        cout<<"Assigned doctor's ID: "<<d_ID<<"\n";
+        cout<<"Date of birth: "<<datebirth<<"\n";
+        cout<<"Blood type: "<<bloodtype<<"\n";
+        cout<<"Diagnosis: "<<Patient_status(diagnosis)<<"\n";
+        cout<<"Date of admission: "<<admisiondate<<"\n";
+        cout<<"Discharge date: "<<dischargedate<<"\n";
+    }; 
+};
+#endif
+
+// hospital .h file containing all main functions
+
+#ifndef HOSPITAL_H
+#define HOSPITAL_H
+
+#include "Patients.h"
+#include "Doctors.h"
+#include <fstream>
+#include <sstream>
+#include <iostream>
+#include <string>
+#include <vector>
+#include <utility>
+using namespace std;
+
+class hospital {
+
+private: 
+        vector<Patients>* allPatients;
+        vector<Doctors>* allDoctors;
+
+public:  
+        //constructor
+         hospital(string pFile, string dFile) {  
+         allPatients = new vector<Patients>();   //initialises both vectors
+         allDoctors = new vector<Doctors>();  
+        
+         // for loop to read patient.txt file since we know the amount of iterations 
+        ifstream p_in(pFile);
+        if (p_in.is_open()) {
+            int pCount;
+            p_in >> pCount;  //gets the amount of patients from the file to put it in for loop
+            p_in.ignore();  //skips line because we start at line 3
+
+            for (int i = 0; i < pCount; i++) { 
+                string line;
+                if (getline(p_in, line)) {
+                    stringstream ss(line);
+                    string f, l, pid, did, dob, bt, diag, adm, dis;
+
+                 //gets everthing and puts them in the temporary strings to pass them to the class setter functions that will set them as the right variable 
+                    getline(ss, f, ','); getline(ss, l, ',');
+                    getline(ss, pid, ','); getline(ss, did, ',');
+                    getline(ss, dob, ','); getline(ss, bt, ',');
+                    getline(ss, diag, ','); getline(ss, adm, ',');
+                    getline(ss, dis, ','); 
+
+                    Patients p; 
+                    p.setpfn(f); p.setpln(l);
+                    p.setpid(stol(pid)); p.setdid(stol(did));
+                    p.setdb(dob); p.setbt(bt);
+                    p.setdia(diag); p.setad(adm); p.setdd(dis);
+
+                    // adds each new patient to the vector to the previously made patient vector
+                    allPatients->push_back(p); }  }
+        p_in.close(); } // closes patient file
+        // The same for loop is used but for the doctors.txt file
+        ifstream d_in(dFile);
+        if (d_in.is_open()) {
+            int dCount;
+            d_in >> dCount; 
+            d_in.ignore();
+
+            for (int i = 0; i < dCount; i++) {
+                string line;
+                if (getline(d_in, line)) {
+                    stringstream ss(line);
+                    string df, dl, did, sp, yoe, bs, pb; //temporary strings 
+
+                    getline(ss, df, ','); getline(ss, dl, ',');
+                    getline(ss, did, ','); getline(ss, sp, ',');
+                    getline(ss, yoe, ','); getline(ss, bs, ',');
+                    getline(ss, pb, ',');
+                    // setters declared in the doctors class
+                    Doctors d;
+                    d.setdfn(df); d.setdln(dl);
+                    d.setdid(stol(did)); d.setsp(sp);
+                    d.setyoe(stoi(yoe)); d.setbs(stod(bs));
+                    d.setpb(stod(pb));
+
+                    allDoctors->push_back(d);// adds to the alldoctors vectors
+                }
+            }
+            d_in.close();  // closes the doctors file
+         } } // end of the constructor
+
+        //destructor needed to avoid problems if one file gets deleted 
+        ~hospital() {
+        delete allPatients;
+        delete allDoctors; }
+
+        //member functions
+        
+        void Find_Oldest_Patient() {   
+         Patients* oldest = &((*allPatients)[0]); // we assume the oldest patient is the first
+           
+         for (auto& pat : *allPatients) { // we use a for loop trought the patients, the oldest will have the smallest db string
+               if (pat.getdb() < oldest->getdb()) {
+               oldest = &pat;   } } //compares alll strings until the true oldest is found
+
+          cout << " The oldest Patient is : " << oldest->getpfn() << " " << oldest->getpln()<< " and they are born the " << oldest->getdb()<< endl; };
+       
+        int Count_Critical_Patients() { 
+            int critcount; critcount=0;
+            for (auto& pat : *allPatients) {
+             if (pat.Patient_status(pat.getdia()) == "critical") {
+                 critcount+=1;}}
+                  return critcount; };
+       
+       
+        void Doctors_By_Speciality (string sp) { //cout doctors that have the speciality 
+           for (auto& doc : *allDoctors) {
+             if (doc.getsp() == sp) {
+                 cout << "Doctor found: " << doc.getdfn() << " " << doc.getdln() << endl; } 
+                } };
+        
+
+        void Show_Patient_by_ID(long int p) { 
+         bool found = false; 
+           for (auto& pat : *allPatients) {
+               if (pat.getpid() == p) {
+                 cout << "patient's name: " << pat.getpfn() << " " << pat.getpln() << endl;
+                 found = true; 
+                 break;        // Exit the loop early once we find the patient 
+               }  } 
+          if (!found) { 
+                  cout << "no patient with this id" << endl;  }} //message if we dont find a patient 
+    
+        void Show_Doctor_by_ID (long int d) {
+        bool found =false;
+          for (auto& doc : *allDoctors) {
+             if (doc.getdid() == d) {
+                  cout<<"Doctor's name: "<<doc.getdfn()<<" "<<doc.getdln()<<endl;
+                  found = true;
+                  break;} } 
+        if (!found) {
+               cout<<"No doctor with this id"<<endl; }  };
+
+       
+        void Show_Assigned_Doctor(long int pi) {
+        for (auto& pat : *allPatients) {
+            if (pat.getpid() == pi) {
+            // We found the patient.
+              bool doctorFound = false;
+               for (auto& doc : *allDoctors) {
+                if (pat.getdid() == doc.getdid()) { //loop trought the doctors until we find the one
+                    cout << "The doctor assigned to this patient is: " 
+                         << doc.getdfn() << " " << doc.getdln() << endl;
+                    doctorFound = true;
+                    break; // Stop looking for doctors once we found it (faster than letting the loop finish)
+                } }
+              if (!doctorFound) {
+                cout << "Patient found, but assigned doctor ID " << pat.getdid() << " does not exist." << endl; }
+                 return;  } }
+         cout << "Patient with ID " << pi << " not found." << endl;}
+
+        
+        void Show_Assigned_Patients(long int di) {   
+         for (auto& doc : *allDoctors) {
+            if (doc.getdid() == di) {
+            // We found the doctor
+              bool patientfound = false;
+               for (auto& pat : *allPatients) { // loop trought patient vector to find assigned doctor id and show all patients assigned
+                if (doc.getdid() == pat.getdid()) {
+                    cout << "Patient: " << pat.getpfn() << " " << pat.getpln() <<" is assigned to doctor: "<<doc.getdfn()<<" "<<doc.getdln()<<endl;
+                    patientfound = true; } }
+              if (!patientfound){
+                cout << "Doctor found but they have no assigned patients "<< endl; }
+                 return;  } } 
+         cout << "Doctor with ID " << di << " not found." << endl; };
+
+};
+ #endif 
+
+// main driver file (.cpp)
+
+#include "hospital.h"
+#include <fstream>
+#include <sstream>
+#include <iostream>
+#include <string>
+#include <vector>
+#include <utility>
+using namespace std;
+
+
+int main() {
+     //hospital object
+    string doctorFile = "doctors.txt";
+    string patientFile = "patients.txt";
+
+    //tells the constructor in hostpital.h wich files to take and read from the object
+    hospital myHospital(doctorFile, patientFile); 
+
+    //display menu and takes choice from the user
+     int choice;
+     cout<<"welcome to the hospital database, what would you like to do?\n"<<"1.Find the oldest patient\n"<<"2.count the amount of critical patients\n"
+     <<"3.Find a doctor by ID\n"<<"4. Find a patient by ID\n"<<"5. Show the assigned doctor of a patient\n"<<"6.Show the assigned patients of a doctor\n"
+     <<"7. exit the databse";
+     cin>>choice;
+
+    // functionalities menu using switch/case and hospital class functions
+    switch (choice)
+    {
+    case 1:
+        myHospital.Find_Oldest_Patient();
+        break;
+    case 2 :
+        cout<<"there is "<<myHospital.Count_Critical_Patients()<<" critical patients";
+        break;
+
+    case 3:
+       long int dID;
+       cout<<"enter the ID of the doctor you are looking for";
+       cin>>dID;
+       myHospital.Show_Doctor_by_ID(dID);
+       break;
+
+    case 4:
+      long int pID;
+      cout<<"enter the ID of the patient you are looking for";
+      cin>>pID;
+      myHospital.Show_Patient_by_ID(pID);
+      break;
+
+    case 5:
+    long int did;
+    cout<<"enter the patient's ID";
+    cin>>did;
+    myHospital.Show_Assigned_Patients(did);
+
+    case 6:
+    long int pid;
+    cout<<"enter the doctor's id";
+    cin>>pid;
+    myHospital.Show_Assigned_Doctor(pid);
+
+    case 7:
+       cout<<"goodbye";
+       break;
+
+    default:
+        cout<<"error invalid choice!";
+        break;  }
+
+ return 0;
+}
